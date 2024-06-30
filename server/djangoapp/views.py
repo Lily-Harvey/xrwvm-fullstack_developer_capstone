@@ -126,8 +126,6 @@ def add_review(request):
         try:
             return JsonResponse({"status": 200})
         except Exception as e:
-            return JsonResponse({"status": 401,
-                                 "message": "Error in posting review: "
-                                 + str(e)})
+            return JsonResponse({"status": 401,"message": "Error in posting review: "+ str(e)})
     else:
         return JsonResponse({"status": 403, "message": "Unauthorized"})
