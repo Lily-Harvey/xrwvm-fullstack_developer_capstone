@@ -7,7 +7,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from .models import CarMake, CarModel
 from .populate import initiate
-from .restapis import get_request, analyze_review_sentiments
+from .restapis import get_request, analyze_review_sentiments, post_review
 
 
 # Get an instance of a logger
@@ -99,17 +99,17 @@ def get_dealerships(request, state="All"):
 
 
 def get_dealer_reviews(request, dealer_id):
-    # if dealer id has been provided
-    if (dealer_id):
+     # if dealer id has been provided
+    if(dealer_id):
         endpoint = "/fetchReviews/dealer/"+str(dealer_id)
         reviews = get_request(endpoint)
         for review_detail in reviews:
             response = analyze_review_sentiments(review_detail['review'])
             print(response)
             review_detail['sentiment'] = response['sentiment']
-        return JsonResponse({"status": 200, "reviews": reviews})
+        return JsonResponse({"status":200,"reviews":reviews})
     else:
-        return JsonResponse({"status": 400, "message": "Bad Request"})
+        return JsonResponse({"status":400,"message":"Bad Request"})
 
 
 def get_dealer_details(request, dealer_id):
@@ -122,10 +122,15 @@ def get_dealer_details(request, dealer_id):
 
 
 def add_review(request):
-    if (not request.user.is_anonymous):
+    if not request.user.is_anonymous:
+        data = json.loads(request.body)
         try:
-            return JsonResponse({"status": 200})
+            response = post_review(data)
+            return JsonResponse({"status": 200, "response": response})
         except Exception as e:
-            return JsonResponse({"status": 401,"message": "Error in posting review: "+ str(e)})
+            return JsonResponse({
+                "status": 401,
+                "message": f"Error in posting review: {e}"
+            })
     else:
         return JsonResponse({"status": 403, "message": "Unauthorized"})
